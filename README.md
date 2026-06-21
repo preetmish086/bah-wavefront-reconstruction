@@ -7,14 +7,12 @@ atmospheric turbulence analysis,
 Zernike coefficient prediction,
 and wavefront reconstruction.
 
-## Structure
+## Project Structure
 
-- data/
-- src/
-- notebooks/
-- docs/
-- tests/
-- results/
+- data/ : datasets and generated data
+- results/ : outputs, plots and model results
+- src/ : source code (to be added)
+- notebooks/ : experiments and analysis notebooks (to be added)
 
 ## MVP Goal
 
