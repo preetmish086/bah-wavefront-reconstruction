@@ -1,14 +1,19 @@
 import torch
 import torch.nn as nn
+from config import (
+    NUM_ZERNIKE_MODES,
+    HIDDEN_SIZE,
+    NUM_LAYERS
+)
 
 
 class ZernikeLSTM(nn.Module):
     def __init__(
         self,
-        input_size=5,
-        hidden_size=64,
-        num_layers=2,
-        output_size=5
+        input_size=NUM_ZERNIKE_MODES,
+        hidden_size=HIDDEN_SIZE,
+        num_layers=NUM_LAYERS,
+        output_size=NUM_ZERNIKE_MODES
     ):
         super().__init__()
 
@@ -26,7 +31,7 @@ class ZernikeLSTM(nn.Module):
 
     def forward(self, x):
 
-        lstm_out, (hidden, cell) = self.lstm(x)
+        _, (hidden, _) = self.lstm(x)
 
         last_hidden = hidden[-1]
 

@@ -10,19 +10,90 @@ def generate_zernike_timeseries(
 ):
     t = np.arange(num_frames)
 
-    z1 = np.sin(0.05 * t)
+    # Base coefficient
 
-    z2 = np.cos(0.04 * t)
+    z1 = np.zeros(num_frames)
 
-    z3 = np.sin(0.03 * t + 1)
+    for i in range(1, num_frames):
+        z1[i] = (
+            0.97 * z1[i - 1]
+            + np.random.normal(0, noise_level)
+        )
 
-    z4 = np.sin(0.02 * t) + np.random.normal(
-        0, noise_level, num_frames
+    # Correlated coefficients
+
+    z2 = (
+        0.7 * z1
+        + np.random.normal(
+            0,
+            noise_level,
+            num_frames
+        )
     )
 
-    z5 = np.cos(0.015 * t) + np.random.normal(
-        0, noise_level, num_frames
+    z3 = (
+        0.5 * z2
+        + np.random.normal(
+            0,
+            noise_level,
+            num_frames
+        )
     )
+
+    z4 = np.zeros(num_frames)
+
+    for i in range(1, num_frames):
+        z4[i] = (
+            0.94 * z4[i - 1]
+            + np.random.normal(
+                0,
+                noise_level
+            )
+        )
+
+    z5 = (
+        0.6 * z4
+        + np.random.normal(
+            0,
+            noise_level,
+            num_frames
+        )
+    )
+
+    z6 = (
+        0.4 * z1
+        + 0.4 * z4
+        + np.random.normal(
+            0,
+            noise_level,
+            num_frames
+        )
+    )
+
+    for _ in range(10):
+
+        idx = np.random.randint(
+            50,
+            num_frames - 50
+        )
+
+        magnitude = np.random.uniform(
+            0.5,
+            1.5
+        )
+
+        burst = np.array([
+            0.2,
+            0.5,
+            0.8,
+            1.0,
+            0.8,
+            0.5,
+            0.2
+        ]) * magnitude
+
+        z1[idx:idx+7] += burst
+        z4[idx:idx+7] += burst
 
     df = pd.DataFrame({
         "frame": t,
@@ -30,7 +101,8 @@ def generate_zernike_timeseries(
         "z2": z2,
         "z3": z3,
         "z4": z4,
-        "z5": z5
+        "z5": z5,
+        "z6": z6
     })
 
     Path(save_path).parent.mkdir(

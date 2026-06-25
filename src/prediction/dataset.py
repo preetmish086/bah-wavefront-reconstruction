@@ -2,17 +2,23 @@ import pandas as pd
 import numpy as np
 import torch
 from torch.utils.data import Dataset
+from config import SEQUENCE_LENGTH
 
 
 class ZernikeDataset(Dataset):
     def __init__(
         self,
         csv_path,
-        sequence_length=20
+        sequence_length=SEQUENCE_LENGTH
     ):
         self.sequence_length = sequence_length
 
         df = pd.read_csv(csv_path)
+
+        if "frame" not in df.columns:
+            raise ValueError(
+                "CSV must contain a 'frame' column."
+            )
 
         self.data = df.drop(
             columns=["frame"]
@@ -40,6 +46,12 @@ class ZernikeDataset(Dataset):
 
     def __getitem__(self, idx):
         return (
-            torch.tensor(self.X[idx]),
-            torch.tensor(self.y[idx])
+            torch.tensor(
+                self.X[idx],
+                dtype=torch.float32
+            ),
+            torch.tensor(
+                self.y[idx],
+                dtype=torch.float32
+            )
         )
