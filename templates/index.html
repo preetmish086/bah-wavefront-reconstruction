@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <title>Adaptive Optics Dashboard</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+</head>
+
+<body>
+
+    <div class="header">
+
+        <h1>Adaptive Optics Control Dashboard</h1>
+
+        <div id="frameCounter">
+            Frame : 0
+        </div>
+
+    </div>
+
+    <div class="dashboard">
+
+        <!-- LEFT COLUMN -->
+
+        <div class="column">
+
+            <div class="card">
+
+                <h2>Image Analysis</h2>
+
+                <p>
+                    Total Blocks :
+                    <span id="blockCount">64</span>
+                </p>
+
+                <div class="table-container">
+
+                    <table id="shiftTable">
+
+                        <thead>
+                            <tr>
+                                <th>Block</th>
+                                <th>Δx</th>
+                                <th>Δy</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- CENTER COLUMN -->
+
+        <div class="column">
+
+            <div class="card">
+
+                <h2>Wavefront Reconstruction</h2>
+
+                <canvas id="wavefrontCanvas" width="400" height="400">
+                </canvas>
+
+            </div>
+
+            <div class="card">
+
+                <h2>Zernike Coefficients</h2>
+
+                <table id="zernikeTable">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>Coefficient</th>
+                            <th>Value</th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+        <!-- RIGHT COLUMN -->
+
+        <div class="column">
+
+            <div class="card">
+
+                <h2>Turbulence Estimation</h2>
+
+                <p>
+                    Fried Parameter :
+                    <span id="r0">-</span>
+                </p>
+
+                <p>
+                    Coherence Time :
+                    <span id="tau0">-</span>
+                </p>
+
+                <p>
+                    Strength :
+                    <span id="strength">-</span>
+                </p>
+
+            </div>
+
+            <div class="card">
+
+                <h2>DM Commands</h2>
+
+                <table id="dmTable">
+
+                    <tbody>
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="footer">
+
+        Adaptive Optics Demonstration Platform
+
+    </div>
+
+    <script src="{{ url_for('static',
+filename='script.js') }}">
+
+</script>
+
+</body>
+
+</html>
