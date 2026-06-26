@@ -4,16 +4,20 @@ import pandas as pd
 from model import ZernikeLSTM
 from config import SEQUENCE_LENGTH
 
+from pathlib import Path
 
-CSV_PATH = "data/synthetic/zernike_timeseries.csv"
-MODEL_PATH = "models/lstm_model.pth"
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+
+CSV_PATH = PROJECT_ROOT / "data" / "synthetic" / "zernike_timeseries.csv"
+MODEL_PATH = PROJECT_ROOT / "models" / "lstm_model.pth"
 
 
-def predict_next_zernike(sequence=None):
+
+def predict_next_zernike(sequence=None, csv_path=CSV_PATH):
 
     if sequence is None:
 
-        df = pd.read_csv(CSV_PATH)
+        df = pd.read_csv(csv_path)
 
         data = df.iloc[:, 1:].values.astype("float32")
 
