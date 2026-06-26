@@ -14,74 +14,82 @@ from config import (
     LEARNING_RATE
 )
 
+from pathlib import Path
 
-os.makedirs(
-    "models",
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+
+CSV_PATH = PROJECT_ROOT / "data" / "synthetic" / "zernike_timeseries.csv"
+MODEL_PATH = PROJECT_ROOT / "models" / "lstm_model.pth"
+
+MODEL_PATH.parent.mkdir(
+    parents=True,
     exist_ok=True
 )
 
 
-CSV_PATH = "data/synthetic/zernike_timeseries.csv"
+def train_model(csv_path=CSV_PATH):
 
-
-
-dataset = ZernikeDataset(
-    csv_path=CSV_PATH,
-    sequence_length=SEQUENCE_LENGTH
-)
-
-dataloader = DataLoader(
-    dataset,
-    batch_size=BATCH_SIZE,
-    shuffle=False
-)
-
-model = ZernikeLSTM()
-
-model.train()
-
-optimizer = torch.optim.Adam(
-    model.parameters(),
-    lr=LEARNING_RATE
-)
-
-criterion = nn.MSELoss()
-
-
-for epoch in range(EPOCHS):
-
-    epoch_loss = 0
-
-    for X_batch, y_batch in dataloader:
-
-        optimizer.zero_grad()
-
-        predictions = model(X_batch)
-
-        loss = criterion(
-            predictions,
-            y_batch
-        )
-
-        loss.backward()
-
-        optimizer.step()
-
-        epoch_loss += loss.item()
-
-    avg_loss = epoch_loss / len(dataloader)
-
-    print(
-        f"Epoch [{epoch+1}/{EPOCHS}] "
-        f"Loss: {avg_loss:.6f}"
+    dataset = ZernikeDataset(
+        csv_path,
+        sequence_length=SEQUENCE_LENGTH
     )
 
-torch.save(
-    model.state_dict(),
-    "models/lstm_model.pth"
-)
+    dataloader = DataLoader(
+        dataset,
+        batch_size=BATCH_SIZE,
+        shuffle=False
+    )
 
-print("\nModel Saved.")
-print(
-    f"Final Training Loss: {avg_loss:.6f}"
-)
+    model = ZernikeLSTM()
+
+    model.train()
+
+    optimizer = torch.optim.Adam(
+        model.parameters(),
+        lr=LEARNING_RATE
+    )
+
+    criterion = nn.MSELoss()
+
+
+    for epoch in range(EPOCHS):
+
+        epoch_loss = 0
+
+        for X_batch, y_batch in dataloader:
+
+            optimizer.zero_grad()
+
+            predictions = model(X_batch)
+
+            loss = criterion(
+                predictions,
+                y_batch
+            )
+
+            loss.backward()
+
+            optimizer.step()
+
+            epoch_loss += loss.item()
+
+        avg_loss = epoch_loss / len(dataloader)
+
+        print(
+            f"Epoch [{epoch+1}/{EPOCHS}] "
+            f"Loss: {avg_loss:.6f}"
+        )
+
+    torch.save(
+        model.state_dict(),
+        MODEL_PATH
+    )
+
+    print("\nModel Saved.")
+    print(
+        f"Final Training Loss: {avg_loss:.6f}"
+    )
+
+if __name__ == "__main__":
+
+    train_model()
