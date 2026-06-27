@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+
 from config import (
     NUM_ZERNIKE_MODES,
     HIDDEN_SIZE,

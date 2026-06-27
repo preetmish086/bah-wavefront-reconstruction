@@ -26,6 +26,4 @@ results/*
 !data/processed/.gitkeep
 !results/.gitkeep
 
-models/
-outputs/
 logs/

@@ -1,5 +1,3 @@
-# config.py
-
 NUM_ZERNIKE_MODES = 6
 
 SEQUENCE_LENGTH = 20
