@@ -16,10 +16,13 @@ from config import (
 
 from pathlib import Path
 
-PROJECT_ROOT = Path(__file__).resolve().parents[2]
+PROJECT_ROOT = Path(__file__).resolve().parents[0]
 
 CSV_PATH = PROJECT_ROOT / "data" / "synthetic" / "zernike_timeseries.csv"
 MODEL_PATH = PROJECT_ROOT / "models" / "lstm_model.pth"
+
+# CSV_PATH = "data/synthetic/zernike_timeseries.csv"
+# MODEL_PATH = "models/lstm_model.pth"
 
 MODEL_PATH.parent.mkdir(
     parents=True,
