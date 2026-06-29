@@ -4,28 +4,357 @@
 <head>
     <meta charset="UTF-8">
     <title>Adaptive Optics Dashboard</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <!-- <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"> -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --bg-main: #0a0a0a;
+            --bg-card: #111111;
+            --bg-surface: #1a1a1a;
+            --border-color: #2a2a2a;
+            --border-hover: #3a3a3a;
+            --accent-primary: #0070f3;
+            --accent-secondary: #7928ca;
+            --text-primary: #ededed;
+            --text-muted: #888888;
+            --success: #17c964;
+            --warning: #f5a623;
+            --danger: #f31260;
+            --font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-primary);
+            font-family: var(--font-family);
+            -webkit-font-smoothing: antialiased;
+            line-height: 1.5;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-main);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--border-hover);
+        }
+
+        /* Header */
+        .header {
+            background-color: var(--bg-main);
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .header h1 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            letter-spacing: -0.5px;
+        }
+
+        .subtitle {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .badge {
+            background-color: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .badge-subtle {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            background: var(--bg-main);
+            padding: 4px 8px;
+            border-radius: 4px;
+            border: 1px solid var(--border-color);
+        }
+
+        /* Layout */
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+            padding: 25px 30px;
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        .column {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* Cards */
+        .card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            transition: border-color 0.2s ease;
+        }
+
+        .card:hover {
+            border-color: var(--border-hover);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .card h2 {
+            font-size: 1rem;
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 15px;
+        }
+
+        .card-header h2 {
+            margin-bottom: 0;
+        }
+
+        /* Tables */
+        .table-container {
+            max-height: 350px;
+            overflow-y: auto;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            background: var(--bg-main);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+        }
+
+        th {
+            background-color: var(--bg-surface);
+            color: var(--text-muted);
+            font-weight: 500;
+            text-align: left;
+            padding: 10px 12px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        td {
+            padding: 10px 12px;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-primary);
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover {
+            background-color: var(--bg-surface);
+        }
+
+        /* DM Table specific */
+        .dm-wrapper {
+            display: flex;
+            justify-content: center;
+        }
+
+        #dmTable {
+            width: auto;
+            border-spacing: 2px;
+            border-collapse: separate;
+        }
+
+        #dmTable td {
+            width: 38px;
+            height: 38px;
+            border: none;
+            border-radius: 4px;
+            text-align: center;
+            font-size: 0.7rem;
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        #dmTable tr:hover {
+            background-color: transparent;
+        }
+
+        /* Metrics & Charts */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .metric {
+            background: var(--bg-main);
+            border: 1px solid var(--border-color);
+            padding: 12px;
+            border-radius: 6px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .metric-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+        }
+
+        .metric-value {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 140px;
+            width: 100%;
+            margin-top: 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            background: var(--bg-main);
+            padding: 10px;
+        }
+
+        /* Canvas */
+        .canvas-wrapper {
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            overflow: hidden;
+            background: #000;
+        }
+
+        canvas#wavefrontCanvas {
+            width: 100% !important;
+            height: auto !important;
+            aspect-ratio: 1 / 1;
+            display: block;
+        }
+
+        /* Utilities */
+        .code-block {
+            background: var(--bg-main);
+            border: 1px solid var(--border-color);
+            padding: 12px;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 0.8rem;
+            color: var(--accent-primary);
+            white-space: pre-wrap;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .status-good {
+            color: var(--success);
+            border-color: var(--success);
+        }
+
+        .status-medium {
+            color: var(--warning);
+            border-color: var(--warning);
+        }
+
+        .status-bad {
+            color: var(--danger);
+            border-color: var(--danger);
+        }
+
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            border-top: 1px solid var(--border-color);
+            margin-top: 20px;
+        }
+
+        @media(max-width: 1024px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .btn {
+            /* display: block; */
+            text-decoration: none;
+            padding: 7.5px 20px;
+            border-radius: 50px;
+            color: #fff;
+            font-size: 12px;
+            border: 2px solid #fff;
+            transition: 0.2s;
+            margin: 0 5px;
+        }
+
+        .btn:hover {
+            background: #fff;
+            color: #000;
+        }
+    </style>
 </head>
 
 <body>
 
-    <div class="header">
-        <h1>Adaptive Optics Control Dashboard</h1>
-        <div id="frameCounter">
-            Frame : 0
+    <header class="header">
+        <div class="header-title">
+            <h1>Adaptive Optics Control</h1>
+            <span class="subtitle">Demonstration Platform</span>
         </div>
-    </div>
+        <div class="btn-group">
+            <a href="{{ url_for('static', filename='modal-0.png') }}" class="btn" target="_blank">SEE SYSTEM
+                ARCHITECTURE</a>
+            <a href="{{ url_for('static', filename='modal-1.png') }}" class="btn" target="_blank">SEE WEB
+                ARCHITECTURE</a>
+            <a href="{{ url_for('static', filename='modal-2.png') }}" class="btn" target="_blank">SEE DATABASE
+                ARCHITECTURE</a>
+        </div>
 
-    <div class="dashboard">
+        <div id="frameCounter" class="badge">Frame: 0</div>
+    </header>
+
+    <main class="dashboard">
 
         <div class="column">
             <div class="card">
-                <h2>Image Analysis</h2>
-                <p>
-                    Total Blocks :
-                    <span id="blockCount">64</span>
-                </p>
+                <div class="card-header">
+                    <h2>Image Analysis (<span style="text-decoration: underline dotted; cursor: pointer;" title="Click on me for more info " onclick="alert(`Frame image analysis couldn't be built at the moment due to the absence of frame format and data`)">SIMULATED</span>) </h2>
+                    <span class="badge-subtle">Total Blocks: <span id="blockCount">64</span></span>
+                </div>
                 <div class="table-container">
                     <table id="shiftTable">
                         <thead>
@@ -35,8 +364,21 @@
                                 <th>Δy</th>
                             </tr>
                         </thead>
-                        <tbody>
-                        </tbody>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="card">
+                <h2>Zernike Coefficients</h2>
+                <div class="table-container">
+                    <table id="zernikeTable">
+                        <thead>
+                            <tr>
+                                <th>Coefficient</th>
+                                <th>Value</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
                     </table>
                 </div>
             </div>
@@ -45,64 +387,318 @@
         <div class="column">
             <div class="card">
                 <h2>Wavefront Reconstruction</h2>
-                <canvas id="wavefrontCanvas" width="400" height="400">
-                </canvas>
+                <div class="canvas-wrapper">
+                    <canvas id="wavefrontCanvas" width="400" height="400"></canvas>
+                </div>
             </div>
+
+
             <div class="card">
-                <h2>Zernike Coefficients</h2>
-                <table id="zernikeTable">
-                    <thead>
-                        <tr>
-                            <th>Coefficient</th>
-                            <th>Value</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                    </tbody>
-                </table>
+                <h2>DM Commands</h2>
+                <div class="dm-wrapper">
+                    <table id="dmTable">
+                        <tbody></tbody>
+                    </table>
+                </div>
             </div>
+
+
         </div>
 
         <div class="column">
             <div class="card">
-                <h2>Turbulence Estimation</h2>
-                <p>
-                    Fried Parameter :
-                    <span id="r0">-</span>
-                </p>
-                <p>
-                    Coherence Time :
-                    <span id="tau0">-</span>
-                </p>
-                <p>
-                    Strength :
-                    <span id="strength">-</span>
-                </p>
+                <div class="card-header">
+                    <h2>Turbulence Estimation</h2>
+                    <span id="strength" class="badge-subtle">-</span>
+                </div>
+
+                <div class="metrics-grid">
+                    <div class="metric">
+                        <span class="metric-label">Fried Parameter (r0)</span>
+                        <span id="r0" class="metric-value">-</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Coherence Time (τ0)</span>
+                        <span id="tau0" class="metric-value">-</span>
+                    </div>
+                </div>
+
+                <div class="chart-container">
+                    <canvas id="r0Chart"></canvas>
+                </div>
+                <div class="chart-container">
+                    <canvas id="tau0Chart"></canvas>
+                </div>
             </div>
+
+
             <div class="card">
-                <h2>DM Commands</h2>
-                <table id="dmTable">
-                    <tbody>
-                    </tbody>
-                </table>
-            </div>
-            
-            <div class="card">
-                <h2>Predicted Next Zernike Coefficients</h2>
-                <pre id="prediction">Loading...</pre>
+                <h2>Prediction Zernike Coefficients</h2>
+                <pre id="prediction" class="code-block">Loading...</pre>
             </div>
         </div>
 
-    </div>
+    </main>
 
-    <div class="footer">
-        Adaptive Optics Demonstration Platform
-    </div>
+    <footer class="footer">
+        <p>Adaptive Optics System &middot; Operational Status: <strong>Online</strong></p>
+    </footer>
 
-    <script src="{{ url_for('static', filename='script.js') }}"></script>
+    <!-- <script src="{{ url_for('static', filename='script.js') }}"></script> -->
+     <script>
+        // ======================================================
+// Adaptive Optics Dashboard
+// ======================================================
 
+let r0Chart, tau0Chart;
+const MAX_DATAPOINTS = 30; // Number of points visible on the chart
 
+function initCharts() {
+    const commonOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: { duration: 0 }, // Disable animation for live streaming feel
+        elements: { point: { radius: 0 } }, // Hide dots for cleaner line
+        scales: {
+            x: { display: false },
+            y: { 
+                border: { display: false },
+                grid: { color: '#2a2a2a' },
+                ticks: { color: '#888', font: { size: 10 } }
+            }
+        },
+        plugins: { legend: { display: false }, tooltip: { enabled: false } }
+    };
 
+    // r0 Chart
+    const ctxR0 = document.getElementById('r0Chart').getContext('2d');
+    r0Chart = new Chart(ctxR0, {
+        type: 'line',
+        data: {
+            labels: [],
+            datasets: [{
+                data: [],
+                borderColor: '#0070f3',
+                borderWidth: 2,
+                tension: 0.3
+            }]
+        },
+        options: commonOptions
+    });
+
+    // tau0 Chart
+    const ctxTau0 = document.getElementById('tau0Chart').getContext('2d');
+    tau0Chart = new Chart(ctxTau0, {
+        type: 'line',
+        data: {
+            labels: [],
+            datasets: [{
+                data: [],
+                borderColor: '#7928ca',
+                borderWidth: 2,
+                tension: 0.3
+            }]
+        },
+        options: commonOptions
+    });
+}
+
+function updateCharts(frame, r0, tau0) {
+    // Update r0
+    r0Chart.data.labels.push(frame);
+    r0Chart.data.datasets[0].data.push(r0);
+    if (r0Chart.data.labels.length > MAX_DATAPOINTS) {
+        r0Chart.data.labels.shift();
+        r0Chart.data.datasets[0].data.shift();
+    }
+    r0Chart.update();
+
+    // Update tau0
+    tau0Chart.data.labels.push(frame);
+    tau0Chart.data.datasets[0].data.push(tau0);
+    if (tau0Chart.data.labels.length > MAX_DATAPOINTS) {
+        tau0Chart.data.labels.shift();
+        tau0Chart.data.datasets[0].data.shift();
+    }
+    tau0Chart.update();
+}
+
+async function updateDashboard() {
+    try {
+        const response = await fetch("/data");
+        const data = await response.json();
+
+        //---------------------------------------------
+        // Frame Counter
+        //---------------------------------------------
+        document.getElementById("frameCounter").innerHTML = "Frame: " + data.frame;
+
+        //---------------------------------------------
+        // Shift Table
+        //---------------------------------------------
+        const shiftBody = document.querySelector("#shiftTable tbody");
+        shiftBody.innerHTML = "";
+        data.shift_data.forEach((shift, index) => {
+            const row = document.createElement("tr");
+            row.innerHTML = `
+            <td>${index + 1}</td>
+            <td>${shift[0].toFixed(3)}</td>
+            <td>${shift[1].toFixed(3)}</td>
+            `;
+            shiftBody.appendChild(row);
+        });
+
+        //---------------------------------------------
+        // Zernike Table
+        //---------------------------------------------
+        const zBody = document.querySelector("#zernikeTable tbody");
+        zBody.innerHTML = "";
+        for (const key in data.zernike) {
+            const row = document.createElement("tr");
+            row.innerHTML = `
+            <td>${key}</td>
+            <td>${Number(data.zernike[key]).toFixed(5)}</td>
+            `;
+            zBody.appendChild(row);
+        }
+
+        //---------------------------------------------
+        // Turbulence & Charts
+        //---------------------------------------------
+        if (Object.keys(data.turbulence).length > 0) {
+            const r0Val = parseFloat(data.turbulence.r0);
+            const tau0Val = parseFloat(data.turbulence.tau0);
+
+            document.getElementById("r0").innerHTML = r0Val + " cm";
+            document.getElementById("tau0").innerHTML = tau0Val + " ms";
+
+            const s = document.getElementById("strength");
+            s.innerHTML = data.turbulence.strength;
+            s.className = "badge-subtle"; // Reset
+
+            if (data.turbulence.strength == "Weak") {
+                s.classList.add("status-good");
+            } else if (data.turbulence.strength == "Moderate") {
+                s.classList.add("status-medium");
+            } else {
+                s.classList.add("status-bad");
+            }
+
+            // Push to rolling charts
+            updateCharts(data.frame, r0Val, tau0Val);
+        }
+
+        //---------------------------------------------
+        // DM Commands
+        //---------------------------------------------
+        const dmTable = document.getElementById("dmTable");
+        dmTable.innerHTML = "";
+        const values = Object.values(data.dm_commands);
+        let index = 0;
+
+        for (let r = 0; r < 8; r++) {
+            const row = document.createElement("tr");
+            for (let c = 0; c < 8; c++) {
+                const td = document.createElement("td");
+                
+                if (index < values.length) {
+                    const v = values[index];
+                    td.innerHTML = v.toFixed(2);
+
+                    // Refined heatmap calculation for dark theme
+                    let intensity = Math.min(255, Math.abs(v) * 500);
+                    if (v >= 0) {
+                        td.style.backgroundColor = `rgba(0, ${150 + (intensity*0.4)}, 255, ${0.4 + (intensity/255)*0.6})`;
+                    } else {
+                        td.style.backgroundColor = `rgba(255, ${100 + (intensity*0.4)}, 0, ${0.4 + (intensity/255)*0.6})`;
+                    }
+                }
+                row.appendChild(td);
+                index++;
+            }
+            dmTable.appendChild(row);
+        }
+
+        //---------------------------------------------
+        // Wavefront Heatmap
+        //---------------------------------------------
+        drawWavefront(data.wavefront);
+
+        //---------------------------------------------
+        // Prediction Matrix
+        //---------------------------------------------
+        const predictionBox = document.getElementById('prediction');
+        if (data.prediction) {
+            if (data.prediction.status) {
+                predictionBox.innerText = data.prediction.status;
+            } else if (data.prediction.error) {
+                predictionBox.innerText = "Error: " + data.prediction.error;
+            } else {
+                predictionBox.innerText = JSON.stringify(data.prediction, null, 2);
+            }
+        } else {
+            predictionBox.innerText = "No prediction data...";
+        }
+
+    } catch (error) {
+        console.error("API Error:", error);
+    }
+}
+
+//==========================================================
+// Draw Wavefront
+//==========================================================
+function drawWavefront(wavefront) {
+    const canvas = document.getElementById("wavefrontCanvas");
+    const ctx = canvas.getContext("2d");
+
+    // Make canvas sharp on high-DPI displays
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = rect.width;
+    canvas.height = rect.height;
+
+    const rows = wavefront.length;
+    const cols = wavefront[0].length;
+    const cellW = canvas.width / cols;
+    const cellH = canvas.height / rows;
+
+    let min = 999;
+    let max = -999;
+
+    wavefront.forEach(r => {
+        r.forEach(v => {
+            if (v < min) min = v;
+            if (v > max) max = v;
+        });
+    });
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    for (let y = 0; y < rows; y++) {
+        for (let x = 0; x < cols; x++) {
+            const value = wavefront[y][x];
+            const norm = (max === min) ? 0.5 : (value - min) / (max - min);
+
+            // Modern colormap: Dark Blue to Bright Cyan/White
+            const red = Math.floor(10 + (245 * norm));
+            const green = Math.floor(10 + (245 * norm));
+            const blue = Math.floor(150 + (105 * norm));
+
+            ctx.fillStyle = `rgb(${red}, ${green}, ${blue})`;
+            ctx.fillRect(Math.floor(x * cellW), Math.floor(y * cellH), Math.ceil(cellW), Math.ceil(cellH));
+        }
+    }
+}
+
+//==========================================================
+// Initialization
+//==========================================================
+document.addEventListener("DOMContentLoaded", () => {
+    initCharts();
+    updateDashboard();
+    setInterval(updateDashboard, 1000);
+});
+     </script>
 </body>
 
 </html>
