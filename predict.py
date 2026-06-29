@@ -1,8 +1,10 @@
 import torch
 import pandas as pd
+import numpy as np
 
 from model import ZernikeLSTM
 from config import SEQUENCE_LENGTH
+from locks import csv_lock, model_lock
 
 from pathlib import Path
 
@@ -16,9 +18,15 @@ def predict_next_zernike(sequence=None, csv_path=CSV_PATH):
 
     if sequence is None:
 
-        df = pd.read_csv(csv_path)
+        with csv_lock:
+            df = pd.read_csv(csv_path)
+
+        df = df.dropna()
 
         data = df.iloc[:, 1:].values.astype("float32")
+
+        if np.isnan(data).any():
+            raise ValueError("Prediction CSV contains NaN.")
 
         input_sequence = data[-SEQUENCE_LENGTH:]
 
@@ -33,12 +41,13 @@ def predict_next_zernike(sequence=None, csv_path=CSV_PATH):
 
     model = ZernikeLSTM()
 
-    model.load_state_dict(
-        torch.load(
-            MODEL_PATH,
-            map_location=torch.device("cpu")
+    with model_lock:
+        model.load_state_dict(
+            torch.load(
+                MODEL_PATH,
+                map_location=torch.device("cpu")
+            )
         )
-    )
 
     model.eval()
 

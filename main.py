@@ -4,8 +4,9 @@ import time
 import pandas as pd
 import os
 from pathlib import Path
+from locks import csv_lock, model_lock
 
-from prediction_manager import run_prediction
+from prediction_manager import run_prediction, training_status
 from engines.image_analysis_simulation import ImageAnalysisSimulation
 from engines.wavefront_reconstruction_engine import WavefrontReconstructionEngine
 from engines.turbulence_estimation_engine import TurbulenceEstimationEngine
@@ -52,27 +53,35 @@ prediction_running = False  # Guard to prevent overlapping prediction runs
 ############################################################
 
 def prediction_worker():
-    """Runs in its own thread. Loops independently, updating prediction results."""
-    global prediction_running
+
     while True:
-        prediction_running = True
+
         try:
+
+            # Show previous prediction while training
+            with prediction_lock:
+                if latest_prediction["result"] is not None:
+                    latest_prediction["result"]["training"] = True
+
             result = run_prediction()
+
+            with prediction_lock:
+                latest_prediction["result"] = result
+
         except Exception as e:
-            error_msg = str(e).lower()
-            if "column" in error_msg or "no columns" in error_msg:
-                result = {"status": "Training model, please wait..."}
+
+            if "No columns to parse from file" in str(e):
+                # CSV was being updated.
+                # Keep showing the previous prediction.
+                pass
             else:
-                print(f"Error running prediction: {e}")
-                result = {"error": str(e)}
-        finally:
-            prediction_running = False
+                with prediction_lock:
+                    latest_prediction["result"] = {
+                        "prediction": None,
+                        "training": False,
+                        "error": str(e)
+                    }
 
-        with prediction_lock:
-            latest_prediction["result"] = result
-
-        # Tune this interval to however often you want predictions refreshed.
-        # The AO pipeline is completely unaffected by this sleep.
         time.sleep(1)
 
 ############################################################
@@ -101,18 +110,29 @@ def adaptive_optics_pipeline():
         ####################################################
         try:
             if os.path.exists(csv_path):
-                df = pd.read_csv(csv_path)
-                new_row = {
-                    "frame": frame,
-                    "z1": zernike.get("a1", 0.0),
-                    "z2": zernike.get("a2", 0.0),
-                    "z3": zernike.get("a3", 0.0),
-                    "z4": zernike.get("a4", 0.0),
-                    "z5": zernike.get("a5", 0.0),
-                    "z6": zernike.get("a6", 0.0)
-                }
-                df = pd.concat([df.iloc[1:], pd.DataFrame([new_row])], ignore_index=True)
-                df.to_csv(csv_path, index=False)
+
+                with csv_lock:
+
+                    df = pd.read_csv(csv_path)
+
+                    new_row = {
+                        "frame": frame,
+                        "z1": zernike.get("a1", 0.0),
+                        "z2": zernike.get("a2", 0.0),
+                        "z3": zernike.get("a3", 0.0),
+                        "z4": zernike.get("a4", 0.0),
+                        "z5": zernike.get("a5", 0.0),
+                        "z6": zernike.get("a6", 0.0)
+                    }
+
+                    df = pd.concat(
+                        [df.iloc[1:], pd.DataFrame([new_row])],
+                        ignore_index=True
+                    )
+                    print(new_row)
+
+                    df.to_csv(csv_path, index=False)
+
         except Exception as e:
             print(f"Error updating CSV: {e}")
 

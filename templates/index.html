@@ -625,19 +625,34 @@ async function updateDashboard() {
         drawWavefront(data.wavefront);
 
         //---------------------------------------------
-        // Prediction Matrix
+        // Prediction
         //---------------------------------------------
-        const predictionBox = document.getElementById('prediction');
-        if (data.prediction) {
-            if (data.prediction.status) {
-                predictionBox.innerText = data.prediction.status;
-            } else if (data.prediction.error) {
-                predictionBox.innerText = "Error: " + data.prediction.error;
-            } else {
-                predictionBox.innerText = JSON.stringify(data.prediction, null, 2);
+        const predictionBox = document.getElementById("prediction");
+
+        if (!data.prediction) {
+            predictionBox.innerText = "No prediction available.";
+        }
+        else if (data.prediction.error) {
+            predictionBox.innerText = "Error: " + data.prediction.error;
+        }
+        else {
+
+            let output = "";
+
+            if (Array.isArray(data.prediction.prediction)) {
+
+                data.prediction.prediction.forEach((value, index) => {
+                    output += `Z${index + 1} : ${Number(value).toFixed(6)}\n`;
+                });
+
             }
-        } else {
-            predictionBox.innerText = "No prediction data...";
+            else {
+
+                output = "Prediction unavailable.";
+
+            }
+
+            predictionBox.innerText = output;
         }
 
     } catch (error) {

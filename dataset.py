@@ -15,6 +15,12 @@ class ZernikeDataset(Dataset):
 
         df = pd.read_csv(csv_path)
 
+        df = df.dropna()
+
+        df = df.reset_index(drop=True)
+
+        assert not df.isnull().values.any()
+
         if "frame" not in df.columns:
             raise ValueError(
                 "CSV must contain a 'frame' column."
@@ -23,6 +29,9 @@ class ZernikeDataset(Dataset):
         self.data = df.drop(
             columns=["frame"]
         ).values.astype(np.float32)
+
+        if np.isnan(self.data).any():
+            raise ValueError("Dataset still contains NaN values.")
 
         self.X = []
         self.y = []

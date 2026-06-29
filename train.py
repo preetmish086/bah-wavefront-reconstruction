@@ -1,8 +1,10 @@
 import os
 import torch
 import torch.nn as nn
+import pandas as pd
 
 from torch.utils.data import DataLoader
+from locks import csv_lock, model_lock
 
 from dataset import ZernikeDataset
 from model import ZernikeLSTM
@@ -27,19 +29,30 @@ MODEL_PATH.parent.mkdir(
     exist_ok=True
 )
 
-
 def train_model(csv_path=CSV_PATH):
 
-    dataset = ZernikeDataset(
-        csv_path,
-        sequence_length=SEQUENCE_LENGTH
-    )
+    with csv_lock:
+
+        df = pd.read_csv(csv_path)
+
+    print(df.tail())
+    print(df.isna().sum())
+    print(df.describe())
+
+    with csv_lock:
+
+        dataset = ZernikeDataset(
+            csv_path,
+            sequence_length=SEQUENCE_LENGTH
+        )
+        print("Dataset size:", len(dataset)) 
 
     dataloader = DataLoader(
         dataset,
         batch_size=BATCH_SIZE,
         shuffle=False
     )
+    print("Batches:", len(dataloader))
 
     model = ZernikeLSTM()
 
@@ -63,10 +76,20 @@ def train_model(csv_path=CSV_PATH):
 
             predictions = model(X_batch)
 
+            if torch.isnan(predictions).any():
+                print("Prediction contains NaN")
+
+            if torch.isnan(y_batch).any():
+                print("Target contains NaN")
+
             loss = criterion(
                 predictions,
                 y_batch
             )
+
+            if torch.isnan(loss):
+                print("LOSS IS NAN!")
+                return
 
             loss.backward()
 
@@ -81,10 +104,11 @@ def train_model(csv_path=CSV_PATH):
             f"Loss: {avg_loss:.6f}"
         )
 
-    torch.save(
-        model.state_dict(),
-        MODEL_PATH
-    )
+    with model_lock:
+        torch.save(
+            model.state_dict(),
+            MODEL_PATH
+        )
 
     print("\nModel Saved.")
     print(

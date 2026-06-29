@@ -106,27 +106,37 @@ async function updateDashboard() {
         //---------------------------------------------
         // Predicted Next Zernike Coefficients
         //---------------------------------------------
-        const predictionBox = document.getElementById('prediction');
-        
-        if (data.prediction) {
-            if (data.prediction.status) {
-                // Catches the "Training model..." string from main.py
-                predictionBox.innerText = data.prediction.status;
-            } else if (data.prediction.error) {
-                // Handles other potential prediction errors gracefully
-                predictionBox.innerText = "Error: " + data.prediction.error;
-            } else {
-                // Formats the dictionary nicely
-                predictionBox.innerText = JSON.stringify(data.prediction, null, 4);
+        const predictionBox = document.getElementById("prediction");
+
+        if (!data.prediction) {
+            predictionBox.innerText = "No prediction available.";
+        }
+        else if (data.prediction.error) {
+            predictionBox.innerText = "Error: " + data.prediction.error;
+        }
+        else {
+
+            const coeffs = data.prediction.prediction;
+
+            if (!coeffs) {
+                predictionBox.innerText = "Prediction unavailable.";
             }
-        } else {
-            predictionBox.innerText = "No prediction data available yet.";
+            else {
+
+                let output = "";
+
+                coeffs.forEach((value, index) => {
+                    output += `Z${index + 1} : ${Number(value).toFixed(6)}\n`;
+                });
+
+                predictionBox.innerText = output;
+            }
         }
 
-    } catch (error) {
-        console.error("Error fetching data from API:", error);
-    }
-}
+            } catch (error) {
+                console.error("Error fetching data from API:", error);
+            }
+        }
 
 //==========================================================
 // Draw Wavefront

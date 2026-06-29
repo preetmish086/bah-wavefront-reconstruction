@@ -21,6 +21,7 @@ Thumbs.db
 data/raw/*
 data/processed/*
 results/*
+data/synthetic/*.csv
 
 !data/raw/.gitkeep
 !data/processed/.gitkeep
