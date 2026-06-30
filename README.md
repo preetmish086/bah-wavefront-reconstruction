@@ -11,12 +11,7 @@
 
 ![WEB-DIGITAL-TWIN](assets/web.jpeg)
 
-LIVE WORKING VIDEO - https://github.com/preetmish086/bah-wavefront-reconstruction/blob/develop/assets/web-vid.mp4
-
-<video width="50%" controls>
-  <source src="assets/web-vid.mp4" type="video/mp4">
-  Your browser does not support the video tag.
-</video>
+LIVE WORKING VIDEO - https://youtu.be/y83JkbjsCfo
 
 ---
 
@@ -101,3 +96,68 @@ The platform integrates the complete adaptive optics pipeline into a unified mon
 
 
 # PROJECT STRUCTURE
+
+```text
+Adaptive-Optics-Control-System/
+│
+├── assets/                         # Demo videos, architecture diagrams, project media
+│
+├── data/
+│   └── synthetic/                  # Rolling Zernike coefficient dataset
+│
+├── engines/
+│   ├── image_analysis_simulation.py
+│   ├── wavefront_reconstruction_engine.py
+│   ├── turbulence_estimation_engine.py
+│   └── dm_translation_engine.py
+│
+├── extras/                         # Supplementary documents and MVP resources
+│
+├── models/
+│   ├── model.py                    # LSTM model architecture
+│   ├── ar_model.py                 # Autoregressive model
+│   └── lstm_model.pth              # Trained model weights
+│
+├── results/                        # Generated outputs, logs and evaluation results
+│
+├── static/                         
+│
+├── templates/
+│   └── index.html
+│
+├── ar_model.py                     # Main architecture for ar model
+├── model.py                        # Main architecture for LSTM model
+├── config.py                       # Global configuration parameters
+├── draft_image.py                  # Image processing utility
+├── locks.py                        # Thread synchronization utilities
+├── main.py                         # Flask application entry point
+├── predict.py                      # Future Zernike coefficient prediction
+├── prediction_manager.py           # Prediction scheduling & model retraining
+├── train.py                        # LSTM training pipeline
+├── train_ar.py                     # Autoregressive model training
+│
+├── requirements.txt
+├── README.md
+├── LICENSE
+└── .gitignore
+```
+
+## Directory Overview
+
+| Directory / File | Description |
+|------------------|-------------|
+| **assets/** | Stores demonstration videos, architecture diagrams, and project media. |
+| **data/** | Contains rolling datasets used for training and real-time prediction. |
+| **engines/** | Implements the Adaptive Optics pipeline, including image analysis, wavefront reconstruction, turbulence estimation, and deformable mirror control. |
+| **extras/** | Supplementary documentation and MVP resources. |
+| **models/** | Contains machine learning model definitions and trained model weights. |
+| **results/** | Stores generated outputs, benchmarks, and performance metrics. |
+| **static/** | Frontend JavaScript, CSS, images, and other static assets. |
+| **templates/** | HTML templates used by the Flask dashboard. |
+| **main.py** | Launches the Flask server and coordinates the complete Adaptive Optics workflow. |
+| **prediction_manager.py** | Handles asynchronous prediction scheduling and periodic model retraining. |
+| **predict.py** | Performs real-time future Zernike coefficient prediction using the trained model. |
+| **train.py / train_ar.py** | Train the LSTM and Autoregressive forecasting models. |
+| **config.py** | Stores configurable hyperparameters and application settings. |
+| **locks.py** | Provides thread synchronization to ensure safe concurrent access to shared resources. |
+| **requirements.txt** | Lists all Python dependencies required to run the project. |
