@@ -1,7 +1,7 @@
 # BAH - MVP - Team AlgoRhythmmm
 > Wavefront Reconstruction, DM Control, Turbulence Characterisation and Forecasting
 
-<a style="display:block; width: fit-content; border:0; background: #00ccff; color: #fff; padding: 10px 20px; border-radius: 50px; font-family: 'arial'; letter-spacing: 1px; text-decoration: none; margin: 25px 0; =" href="#">SUBMITTED PPT (SYNOPSIS) ↗️</a>
+<a style="display:block; width: fit-content; border:0; background: #00ccff; color: #fff; padding: 10px 20px; border-radius: 50px; font-family: 'arial'; letter-spacing: 1px; text-decoration: none; margin: 25px 0; =" href="https://docs.google.com/presentation/d/1bONYWeurhWJO1tGv1b5jdY-nArSsAXbnjnjfiqRyBd4/edit?usp=sharing">SUBMITTED PPT (SYNOPSIS) ↗️</a>
 
 ## Digital Twin Web Portal
 
